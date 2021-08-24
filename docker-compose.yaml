@@ -1,0 +1,47 @@
+version: '3.3'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: django.dockerfile
+    command: python ./nerproject/manage.py runserver localhost:7000
+    ports: 
+     - 7000:7000
+    volumes: 
+     - .:/app
+    depends_on: 
+     - db
+    network_mode: host
+  db:
+    image: postgres:latest
+    environment: 
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=postgres
+    volumes:
+     - postgres_data:/var/lib/postgresql/data/
+    network_mode: host
+  react:
+    build: 
+      context: ./reactapp
+      dockerfile: react.dockerfile
+    ports: 
+     - 3000:3000
+    volumes: 
+     - ./reactapp/src:/app/src
+    depends_on: 
+     - web
+    network_mode: host
+    stdin_open: true
+    tty: true
+  jupyter:
+    build:
+      context: ./jupyter-notebooks
+      dockerfile: jupyter.dockerfile
+    ports: 
+     - 8888:8888
+    volumes:
+     - ./jupyter-notebooks/notebooks:/app
+
+volumes: 
+  postgres_data:
